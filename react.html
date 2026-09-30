@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Task Manager — React 版</title>
+
+<!-- ===================================================================
+     Checkpoint 5-1：框架啟動
+     使用 React 18 UMD + Babel Standalone，不需要 npm / Vite / build，
+     單一 HTML 檔即可執行，也可直接貼到 CodePen。
+     =================================================================== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.2/babel.min.js"></script>
+
+<style>
+:root {
+  --bg:#eef1f7; --surface:#fff; --ink:#1f2430; --ink-soft:#6b7280;
+  --line:#dfe3ec; --brand:#3b6ef5; --brand-dk:#2b56cc;
+  --danger:#e0364c; --done:#9aa1ae; --radius:10px;
+}
+* { box-sizing:border-box; }
+body,h1,h2,p,ul,li { margin:0; padding:0; }
+ul { list-style:none; }
+body {
+  font-family:"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  background:var(--bg); color:var(--ink); line-height:1.6;
+  padding:24px 16px 64px;
+}
+.app-header { max-width:620px; margin:0 auto 20px; text-align:center; }
+.app-title { font-size:1.9rem; font-weight:700; }
+.badge {
+  display:inline-block; margin-top:6px; padding:3px 12px;
+  font-size:.78rem; font-weight:700; letter-spacing:.08em;
+  color:#fff; background:var(--brand); border-radius:999px;
+}
+.app-main { max-width:620px; margin:0 auto; display:flex; flex-direction:column; gap:16px; }
+.card { background:var(--surface); border:1px solid var(--line);
+        border-radius:var(--radius); padding:18px 20px; }
+.card-title { font-size:.8rem; font-weight:700; letter-spacing:.12em;
+              color:var(--ink-soft); text-transform:uppercase; margin-bottom:12px; }
+.input-label { display:block; font-size:.85rem; color:var(--ink-soft); margin-bottom:6px; }
+.input-row { display:flex; gap:10px; }
+.input {
+  flex:1 1 auto; min-width:0; font:inherit; padding:11px 13px;
+  border:1.5px solid var(--line); border-radius:8px; background:#fbfcfe;
+  transition:border-color .15s, box-shadow .15s;
+}
+.input:hover { border-color:#c3cad8; }
+.input:focus { outline:none; border-color:var(--brand); box-shadow:0 0 0 3px rgba(59,110,245,.20); }
+.input.is-bad { border-color:var(--danger); }
+.btn {
+  font:inherit; font-weight:600; cursor:pointer; border:1.5px solid transparent;
+  border-radius:8px; padding:11px 20px;
+  transition:background .15s, color .15s, border-color .15s, box-shadow .15s;
+}
+.btn:focus-visible { outline:3px solid rgba(59,110,245,.55); outline-offset:2px; }
+.btn-add { flex:0 0 auto; background:var(--brand); color:#fff; }
+.btn-add:hover { background:var(--brand-dk); box-shadow:0 4px 14px rgba(59,110,245,.35); }
+.input-hint { margin-top:8px; font-size:.85rem; color:var(--danger); }
+.task-list { display:flex; flex-direction:column; gap:8px; }
+.task-item {
+  display:flex; align-items:center; gap:12px; padding:11px 13px;
+  border:1px solid var(--line); border-radius:8px; background:#fcfdff;
+  transition:background .15s, border-color .15s;
+}
+.task-item:hover { background:#f4f7ff; border-color:#c9d6f8; }
+.task-check { flex:0 0 auto; width:19px; height:19px; accent-color:var(--brand); cursor:pointer; }
+.task-text { flex:1 1 auto; min-width:0; overflow-wrap:anywhere; cursor:pointer; }
+.task-item.is-done .task-text { text-decoration:line-through; color:var(--done); }
+.btn-del {
+  flex:0 0 auto; padding:6px 14px; font-size:.85rem;
+  background:#fff; color:var(--danger); border-color:#f2c4cb;
+}
+.btn-del:hover { background:var(--danger); color:#fff; border-color:var(--danger); }
+.empty-msg { padding:22px 0; text-align:center; color:var(--ink-soft); font-size:.92rem; }
+.stats { text-align:center; color:var(--ink-soft); font-size:.95rem; }
+.stats strong { color:var(--ink); font-size:1.05rem; }
+
+@media (max-width:480px) {
+  body { padding:16px 12px 48px; }
+  .app-title { font-size:1.5rem; }
+  .card { padding:14px; }
+  .input-row { flex-direction:column; gap:8px; }
+  .btn-add { width:100%; }
+  .task-item { gap:10px; padding:10px; }
+  .btn-del { padding:6px 10px; }
+  .stats { font-size:.88rem; }
+}
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState } = React;
+
+/* ═══════════════════════════════════════════════════════════════════
+   TaskItem：單一任務列（子元件）
+   -------------------------------------------------------------------
+   透過 props 接收資料與兩個回呼函式，本身不持有 state。
+   這是 React 的「資料往下傳、事件往上報」模式。
+   ═══════════════════════════════════════════════════════════════════ */
+function TaskItem({ task, onToggle, onDelete }) {
+  return (
+    <li className={'task-item' + (task.done ? ' is-done' : '')}>
+      <input
+        type="checkbox"
+        className="task-check"
+        id={'r-task-' + task.id}
+        checked={task.done}
+        onChange={() => onToggle(task.id)}
+      />
+      <label className="task-text" htmlFor={'r-task-' + task.id}>
+        {task.text}
+      </label>
+      <button type="button" className="btn btn-del" onClick={() => onDelete(task.id)}>
+        刪除
+      </button>
+    </li>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   App：主元件
+   -------------------------------------------------------------------
+   Checkpoint 5-2：資料與畫面連動
+     tasks 存在 useState 裡。呼叫 setTasks 後 React 會自動重新渲染，
+     不需要像原生版那樣手動呼叫 render()——這正是框架的價值。
+   ═══════════════════════════════════════════════════════════════════ */
+function App() {
+  const [tasks, setTasks] = useState([
+    { id: 1, text: '完成 Web App 實作',    done: false },
+    { id: 2, text: '完成 JavaScript 練習', done: false },
+    { id: 3, text: '完成課程作業',          done: true  }
+  ]);
+  const [draft, setDraft] = useState('');
+  const [showHint, setShowHint] = useState(false);
+
+  /* ---- Checkpoint 5-2：新增任務 ---- */
+  function handleAdd(event) {
+    event.preventDefault();
+
+    const trimmed = draft.trim();
+    if (trimmed === '') {       // 空白輸入不新增
+      setShowHint(true);
+      return;
+    }
+
+    // 用展開運算子產生「新陣列」，不直接修改原本的 tasks
+    setTasks([...tasks, { id: Date.now(), text: trimmed, done: false }]);
+    setDraft('');
+    setShowHint(false);
+  }
+
+  /* ---- Checkpoint 5-3：完成／取消完成 ---- */
+  function handleToggle(id) {
+    setTasks(tasks.map(t =>
+      t.id === id ? { ...t, done: !t.done } : t
+    ));
+  }
+
+  /* ---- Checkpoint 5-4：刪除任務 ---- */
+  function handleDelete(id) {
+    setTasks(tasks.filter(t => t.id !== id));
+  }
+
+  const total  = tasks.length;
+  const done   = tasks.filter(t => t.done).length;
+  const active = total - done;
+
+  return (
+    <React.Fragment>
+      <header className="app-header">
+        <h1 className="app-title">My Task Manager</h1>
+        <span className="badge">REACT 版</span>
+      </header>
+
+      <main className="app-main">
+
+        <section className="card">
+          <h2 className="card-title">新增任務</h2>
+          <form className="add-form" onSubmit={handleAdd} noValidate>
+            <label className="input-label" htmlFor="r-input">任務名稱</label>
+            <div className="input-row">
+              <input
+                id="r-input"
+                className={'input' + (showHint ? ' is-bad' : '')}
+                type="text"
+                placeholder="例如：完成期末專題"
+                autoComplete="off"
+                value={draft}
+                onChange={e => { setDraft(e.target.value); setShowHint(false); }}
+              />
+              <button type="submit" className="btn btn-add">新增</button>
+            </div>
+            {showHint && <p className="input-hint" role="alert">請先輸入任務名稱</p>}
+          </form>
+        </section>
+
+        <section className="card">
+          <h2 className="card-title">任務清單</h2>
+          <ul className="task-list">
+            {tasks.map(task => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onToggle={handleToggle}
+                onDelete={handleDelete}
+              />
+            ))}
+          </ul>
+          {total === 0 && <p className="empty-msg">目前沒有任務</p>}
+        </section>
+
+        <section className="card">
+          <p className="stats">
+            共 <strong>{total}</strong> 項 ·
+            未完成 <strong>{active}</strong> 項 ·
+            已完成 <strong>{done}</strong> 項
+          </p>
+        </section>
+
+      </main>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>

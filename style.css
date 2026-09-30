@@ -1,0 +1,253 @@
+/* ===================================================================
+   My Task Manager — style.css
+   第二階段：CSS 與 RWD
+   2-1 基本版面 / 2-2 RWD(480px) / 2-3 Hover & Focus
+   =================================================================== */
+
+/* ---------- 設計變數 ---------- */
+:root {
+  --bg:        #eef1f7;
+  --surface:   #ffffff;
+  --ink:       #1f2430;
+  --ink-soft:  #6b7280;
+  --line:      #dfe3ec;
+  --brand:     #3b6ef5;
+  --brand-dk:  #2b56cc;
+  --danger:    #e0364c;
+  --done:      #9aa1ae;
+  --radius:    10px;
+}
+
+/* ---------- Reset ---------- */
+* { box-sizing: border-box; }
+body, h1, h2, p, ul, li, figure { margin: 0; padding: 0; }
+ul { list-style: none; }
+
+body {
+  font-family: "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  padding: 24px 16px 64px;
+}
+
+/* 視覺上隱藏但保留給螢幕閱讀器 */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- 2-1 基本版面：清楚的區塊 ---------- */
+.app-header {
+  max-width: 620px;
+  margin: 0 auto 20px;
+  text-align: center;
+}
+.app-title {
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+
+.app-main {
+  max-width: 620px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.card-title {
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+/* ---------- 2-1 輸入欄位與按鈕容易辨識 ---------- */
+.input-label {
+  display: block;
+  font-size: .85rem;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+.input-row {
+  display: flex;
+  gap: 10px;
+}
+.input {
+  flex: 1 1 auto;
+  min-width: 0;                 /* 關鍵：允許 flex 子元素縮到比內容窄，避免溢出 */
+  font: inherit;
+  padding: 11px 13px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfe;
+  transition: border-color .15s, box-shadow .15s;
+}
+.input::placeholder { color: #aeb4c0; }
+
+.btn {
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  padding: 11px 20px;
+  transition: background .15s, color .15s, border-color .15s, box-shadow .15s;
+}
+.btn-add {
+  flex: 0 0 auto;
+  background: var(--brand);
+  color: #fff;
+}
+.btn-filter {
+  background: #fff;
+  color: var(--ink-soft);
+  border-color: var(--line);
+  padding: 8px 18px;
+}
+.btn-filter.is-on {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.input-hint {
+  margin-top: 8px;
+  font-size: .85rem;
+  color: var(--danger);
+}
+.input.is-bad { border-color: var(--danger); }
+
+/* ---------- 2-3 Hover / Focus ---------- */
+.btn-add:hover      { background: var(--brand-dk); box-shadow: 0 4px 14px rgba(59,110,245,.35); }
+.btn-filter:hover   { color: var(--brand); border-color: var(--brand); background: #f2f6ff; }
+.btn-filter.is-on:hover { background: var(--brand-dk); color: #fff; }
+.btn-del:hover      { background: var(--danger); color: #fff; border-color: var(--danger); }
+.input:hover        { border-color: #c3cad8; }
+
+.input:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(59,110,245,.20);
+}
+.btn:focus-visible,
+.task-check:focus-visible {
+  outline: 3px solid rgba(59,110,245,.55);
+  outline-offset: 2px;
+}
+
+/* ---------- 2-1 任務清單的視覺層次 ---------- */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fcfdff;
+  transition: background .15s, border-color .15s;
+}
+.task-item:hover { background: #f4f7ff; border-color: #c9d6f8; }
+
+.task-check {
+  flex: 0 0 auto;
+  width: 19px;
+  height: 19px;
+  accent-color: var(--brand);
+  cursor: pointer;
+}
+.task-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;      /* 關鍵：長任務名稱折行，不撐破版面 */
+  cursor: pointer;
+}
+.task-item.is-done .task-text {
+  text-decoration: line-through;
+  color: var(--done);
+}
+.btn-del {
+  flex: 0 0 auto;
+  padding: 6px 14px;
+  font-size: .85rem;
+  background: #fff;
+  color: var(--danger);
+  border-color: #f2c4cb;
+}
+
+.empty-msg {
+  padding: 22px 0;
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: .92rem;
+}
+
+/* ---------- 統計 ---------- */
+.stats-card { padding: 14px 20px; }
+.stats {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: .95rem;
+}
+.stats strong {
+  color: var(--ink);
+  font-size: 1.05rem;
+}
+
+/* ===================================================================
+   2-2 RWD：480px 以下
+   目標：輸入框不溢出、按鈕不被截掉、任務內容不超出螢幕、篩選可操作
+   =================================================================== */
+@media (max-width: 480px) {
+  body { padding: 16px 12px 48px; }
+
+  .app-title { font-size: 1.5rem; }
+
+  .card { padding: 14px; }
+
+  /* 輸入列改直向堆疊，輸入框與按鈕都拿到整行寬度，不會被擠爆 */
+  .input-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .btn-add { width: 100%; }
+
+  /* 三個篩選按鈕平分一行，維持可點擊面積 */
+  .filter-bar { gap: 6px; }
+  .btn-filter {
+    flex: 1 1 0;
+    padding: 10px 4px;
+    font-size: .9rem;
+  }
+
+  /* 任務列：文字可折行，刪除鈕固定不被截掉 */
+  .task-item {
+    gap: 10px;
+    padding: 10px;
+  }
+  .btn-del { padding: 6px 10px; }
+
+  .stats { font-size: .88rem; }
+}

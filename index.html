@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Task Manager</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Checkpoint 1-1 ①網頁標題 -->
+  <header class="app-header">
+    <h1 class="app-title">My Task Manager</h1>
+  </header>
+
+  <main class="app-main">
+
+    <!-- Checkpoint 1-1 ②任務輸入欄位 ③新增按鈕 -->
+    <section class="card" aria-labelledby="h-add">
+      <h2 class="card-title" id="h-add">新增任務</h2>
+      <form id="add-form" class="add-form" novalidate>
+        <label class="input-label" for="task-input">任務名稱</label>
+        <div class="input-row">
+          <input id="task-input" class="input" type="text"
+                 placeholder="例如：完成 Web App 實作" autocomplete="off">
+          <button type="submit" class="btn btn-add">新增</button>
+        </div>
+        <p id="input-hint" class="input-hint" role="alert" hidden>請先輸入任務名稱</p>
+      </form>
+    </section>
+
+    <!-- Checkpoint 1-1 ⑤篩選區域 / Checkpoint 3-4 -->
+    <section class="card" aria-labelledby="h-filter">
+      <h2 class="card-title" id="h-filter">篩選</h2>
+      <div id="filter-bar" class="filter-bar" role="group" aria-label="任務篩選">
+        <button type="button" class="btn btn-filter is-on" data-filter="all">全部</button>
+        <button type="button" class="btn btn-filter" data-filter="active">未完成</button>
+        <button type="button" class="btn btn-filter" data-filter="done">已完成</button>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════
+         ★ Checkpoint 1-2：我認為最重要的語意化 HTML 區域 ★
+
+         這一段是整個 App 的核心，語意化的理由：
+         1. <section> + aria-labelledby 讓「任務清單」成為一個有
+            名稱的獨立地標區塊，螢幕閱讀器可直接跳到這裡。
+         2. <ul>/<li> 表達「一組地位相同、可增減的項目」，語意上
+            正好對應任務清單；用 <div> 堆疊則完全沒有這層意義。
+         3. 每個 <li> 內用 <label for> 綁定 <input type="checkbox">，
+            點文字也能勾選，且閱讀器會唸出「核取方塊，已勾選」。
+         4. 刪除用 <button> 而不是 <div onclick>，天生可 Tab 聚焦、
+            可用 Enter/Space 觸發，不必自己補 tabindex 與鍵盤事件。
+
+         <li> 由 script.js 的 render() 動態產生。
+         ══════════════════════════════════════════════════════════ -->
+    <section class="card" aria-labelledby="h-list">
+      <h2 class="card-title" id="h-list">任務清單</h2>
+      <ul id="task-list" class="task-list"></ul>
+      <p id="empty-msg" class="empty-msg" hidden>目前沒有符合條件的任務</p>
+    </section>
+
+    <!-- Checkpoint 1-1 ⑥任務統計資訊 / Checkpoint 3-5 -->
+    <section class="card stats-card" aria-labelledby="h-stats">
+      <h2 class="card-title sr-only" id="h-stats">任務統計</h2>
+      <p class="stats" aria-live="polite">
+        共 <strong id="n-total">0</strong> 項 ·
+        未完成 <strong id="n-active">0</strong> 項 ·
+        已完成 <strong id="n-done">0</strong> 項
+      </p>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
